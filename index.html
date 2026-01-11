@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IOPN Hub - Complete Progress Tracker</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+            --bg-card: linear-gradient(135deg, rgba(15,32,39,0.95) 0%, rgba(32,58,67,0.95) 100%);
+            --color-primary: #00d4ff;
+            --color-secondary: #00ff88;
+            --color-text: #ffffff;
+            --border-color: #00d4ff;
+        }
+
+        .light-mode {
+            --bg-primary: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --bg-card: linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(240,242,245,0.95) 100%);
+            --color-primary: #0066cc;
+            --color-secondary: #00aa66;
+            --color-text: #333333;
+            --border-color: #0066cc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-primary);
+            min-height: 100vh;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 40px rgba(0,212,255,0.3);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            position: relative;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--color-primary);
+            color: var(--color-text);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(180deg);
+        }
+
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--color-primary);
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+        }
+
+        .tagline {
+            color: var(--color-secondary);
+            font-size: 12px;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            color: var(--color-text);
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,212,255,0.4);
+        }
+
+        .input-section {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 40px rgba(0,212,255,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .credit {
+            text-align: center;
+            color: var(--color-primary);
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        .credit a {
+            color: var(--color-secondary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 14px;
+            background: rgba(0,0,0,0.2);
+            color: var(--color-text);
+            transition: all 0.3s;
+        }
+
+        input::placeholder {
+            color: rgba(255,255,255,0.5);
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--color-secondary);
+            box-shadow: 0 0 20px rgba(0,255,136,0.3);
+        }
+
+        button {
+            padding: 15px 40px;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            color: var(--color-text);
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0,212,255,0.2);
+            text-align: center;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 40px rgba(0,255,136,0.3);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: var(--color-primary);
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .section {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 0 40px rgba(0,212,255,0.2);
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: bold;
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .achievement {
+            background: rgba(0,0,0,0.3);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .achievement.unlocked {
+            border-color: var(--color-secondary);
+            box-shadow: 0 0 20px rgba(0,255,136,0.4);
+        }
+
+        .achievement.locked {
+            opacity: 0.4;
+            filter: grayscale(100%);
+        }
+
+        .achievement-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .achievement-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(20px, 1fr));
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .heatmap-day {
+            aspect-ratio: 1;
+            background: rgba(0,0,0,0.2);
+            border-radius: 3px;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .heatmap-day.active-1 { background: rgba(0,212,255,0.3); }
+        .heatmap-day.active-2 { background: rgba(0,212,255,0.5); }
+        .heatmap-day.active-3 { background: rgba(0,212,255,0.7); }
+        .heatmap-day.active-4 { background: rgba(0,212,255,1); }
+
+        .social-connections {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .social-card {
+            background: rgba(0,0,0,0.3);
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s;
+        }
+
+        .social-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 0 20px rgba(0,212,255,0.3);
+        }
+
+        .social-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .social-icon {
+            font-size: 32px;
+        }
+
+        .connected {
+            color: var(--color-secondary);
+            font-weight: 600;
+        }
+
+        .disconnected {
+            color: #ff6b6b;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .leaderboard-table th,
+        .leaderboard-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(0,212,255,0.2);
+            color: var(--color-text);
+        }
+
+        .leaderboard-table th {
+            background: rgba(0,212,255,0.1);
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .leaderboard-table tr:hover {
+            background: rgba(0,212,255,0.05);
+        }
+
+        .rank-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .rank-1 { background: linear-gradient(135deg, #ffd700, #ffed4e); color: #000; }
+        .rank-2 { background: linear-gradient(135deg, #c0c0c0, #e8e8e8); color: #000; }
+        .rank-3 { background: linear-gradient(135deg, #cd7f32, #e6a85c); color: #fff; }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--color-primary);
+        }
+
+        .error, .warning {
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .error {
+            background: rgba(255,0,0,0.1);
+            border: 2px solid #ff0000;
+            color: #ff6b6b;
+        }
+
+        .warning {
+            background: rgba(255,193,7,0.1);
+            border: 2px solid #ffc107;
+            color: #ffc107;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+            color: #0f2027;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 50px rgba(0,212,255,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-amount {
+            font-size: 48px;
+            font-weight: 900;
+            margin-bottom: 20px;
+        }
+
+        .balance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .balance-item {
+            background: rgba(15,32,39,0.3);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid, .achievements-grid {
+                grid-template-columns: 1fr;
+            }
+            .input-group, .action-buttons {
+                flex-direction: column;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+        }
+
+        .close-modal {
+            float: right;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            <div class="logo">⋂ IOPN HUB</div>
+            <div class="subtitle">Internet of People Network</div>
+            <div class="tagline">Where Performance Meets Sovereignty</div>
+            <div class="action-buttons">
+                <button class="btn" onclick="exportStats()">📸 Export Stats</button>
+                <button class="btn" onclick="shareToTwitter()">🐦 Share to Twitter</button>
+                <button class="btn" onclick="showLeaderboard()">🏆 Leaderboard</button>
+            </div>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" id="walletInput" placeholder="Enter your wallet address (0x...)" />
+                <button onclick="checkWallet()" id="checkBtn">🔍 Check Statistics</button>
+            </div>
+            <div class="credit">Designed by <a href="https://twitter.com/sir_mimisco" target="_blank">@sir_mimisco</a></div>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <!-- Leaderboard Modal -->
+    <div id="leaderboardModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeLeaderboard()">&times;</span>
+            <h2 style="color: var(--color-primary); margin-bottom: 20px;">🏆 Top IOPN Users</h2>
+            <table class="leaderboard-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Address</th>
+                        <th>Points</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboardBody">
+                    <!-- Will be populated dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const IOPN_RPC = 'https://testnet-rpc.iopn.tech';
+        const BLOCKSCOUT_API = 'https://testnet.iopn.tech/api/v2';
+        const EXPLORER_URL = 'https://testnet.iopn.tech';
+        
+        const ACHIEVEMENTS = [
+            { id: 'first_tx', name: 'First Steps', icon: '👣', requirement: tx => tx >= 1 },
+            { id: 'swap_master', name: 'Swap Master', icon: '💱', requirement: (tx, data) => data.activities.swaps.length >= 5 },
+            { id: 'social_butterfly', name: 'Social Butterfly', icon: '🦋', requirement: (tx, data) => data.socialConnections >= 2 },
+            { id: 'learn_graduate', name: 'Learn Graduate', icon: '🎓', requirement: (tx, data) => data.learnScore >= 80 },
+            { id: 'rwa_investor', name: 'RWA Investor', icon: '💎', requirement: (tx, data) => data.rwaPortfolio > 0 },
+            { id: 'century_club', name: 'Century Club', icon: '💯', requirement: (tx, data) => data.totalPoints >= 100 },
+            { id: 'network_veteran', name: 'Network Veteran', icon: '⭐', requirement: tx => tx >= 50 }
+        ];
+        
+        let walletData = {
+            address: '',
+            balance: 0,
+            transactions: [],
+            platformStats: {},
+            activities: { swaps: [], bridges: [], identity: [], staking: [], other: [] },
+            totalPoints: 0,
+            learnScore: 0,
+            rwaPortfolio: 0,
+            socialConnections: 0,
+            achievements: []
+        };
+
+        let isDarkMode = true;
+
+        function toggleTheme() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('light-mode');
+            document.querySelector('.theme-toggle').textContent = isDarkMode ? '🌙' : '☀️';
+        }
+
+        async function checkWallet() {
+            const address = document.getElementById('walletInput').value.trim();
+            
+            if (!address || !address.startsWith('0x') || address.length !== 42) {
+                alert('Please enter a valid wallet address');
+                return;
+            }
+
+            walletData.address = address;
+            document.getElementById('checkBtn').disabled = true;
+            document.getElementById('checkBtn').textContent = '⏳ Loading...';
+            document.getElementById('results').innerHTML = '<div class="loading">🔍 Fetching your complete IOPN profile...</div>';
+
+            try {
+                await Promise.all([
+                    fetchBalance(address),
+                    fetchTransactions(address),
+                    fetchLearnScore(address),
+                    fetchRWAPortfolio(address),
+                    checkSocialConnections(address)
+                ]);
+                
+                analyzeActivities();
+                calculateAchievements();
+                displayResults();
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('results').innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            } finally {
+                document.getElementById('checkBtn').disabled = false;
+                document.getElementById('checkBtn').textContent = '🔍 Check Statistics';
+            }
+        }
+
+        async function fetchBalance(address) {
+            try {
+                const response = await fetch(IOPN_RPC, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        jsonrpc: '2.0',
+                        method: 'eth_getBalance',
+                        params: [address, 'latest'],
+                        id: 1
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.result) {
+                    walletData.balance = parseInt(data.result, 16) / 1e18;
+                }
+            } catch (error) {
+                console.error('Balance fetch error:', error);
+                walletData.balance = 0;
+            }
+        }
+
+        async function fetchTransactions(address) {
+            try {
+                const url = `${BLOCKSCOUT_API}/addresses/${address}/transactions`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                walletData.transactions = data?.items || [];
+            } catch (error) {
+                console.error('Transactions fetch error:', error);
+                walletData.transactions = [];
+            }
+        }
+
+        async function fetchLearnScore(address) {
+            // Simulated - in real app, would call learn.iopn.tech API
+            walletData.learnScore = Math.floor(Math.random() * 100);
+        }
+
+        async function fetchRWAPortfolio(address) {
+            // Simulated - in real app, would call rwa.iopn.tech API
+            walletData.rwaPortfolio = Math.floor(Math.random() * 5);
+        }
+
+        async function checkSocialConnections(address) {
+            // Simulated - would check if wallet connected Twitter/Discord
+            walletData.socialConnections = Math.floor(Math.random() * 3);
+        }
+
+        function analyzeActivities() {
+            walletData.activities = { swaps: [], bridges: [], identity: [], staking: [], other: [] };
+            walletData.platformStats = {};
+            walletData.totalPoints = 0;
+
+            walletData.transactions.forEach(tx => {
+                const points = 5;
+                walletData.totalPoints += points;
+                
+                // Simplified categorization
+                walletData.activities.other.push({
+                    hash: tx.hash,
+                    type: 'Transaction',
+                    points: points
+                });
+            });
+        }
+
+        function calculateAchievements() {
+            walletData.achievements = ACHIEVEMENTS.map(achievement => ({
+                ...achievement,
+                unlocked: achievement.requirement(walletData.transactions.length, walletData)
+            }));
+        }
+
+        function displayResults() {
+            const totalTxs = walletData.transactions.length;
+            const level = Math.floor(walletData.totalPoints / 100) + 1;
+
+            let html = `
+                <div class="balance-card">
+                    <div style="font-size: 14px; opacity: 0.9; margin-bottom: 10px;">💎 YOUR OPN BALANCE</div>
+                    <div class="balance-amount">${walletData.balance.toFixed(4)} OPN</div>
+                    <div class="balance-grid">
+                        <div class="balance-item">
+                            <div style="font-size: 12px; opacity: 0.8;">Reputation Points</div>
+                            <div style="font-size: 24px; font-weight: 900;">${walletData.totalPoints}</div>
+                        </div>
+                        <div class="balance-item">
+                            <div style="font-size: 12px; opacity: 0.8;">Network Level</div>
+                            <div style="font-size: 24px; font-weight: 900;">${level}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${totalTxs}</div>
+                        <div class="stat-label">Transactions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${walletData.learnScore}%</div>
+                        <div class="stat-label">Learn Score</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${walletData.rwaPortfolio}</div>
+                        <div class="stat-label">RWA Assets</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${walletData.socialConnections}/3</div>
+                        <div class="stat-label">Social Connected</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">🎖️ Achievements</div>
+                    <div class="achievements-grid">
+            `;
+
+            walletData.achievements.forEach(achievement => {
+                html += `
+                    <div class="achievement ${achievement.unlocked ? 'unlocked' : 'locked'}">
+                        <div class="achievement-icon">${achievement.icon}</div>
+                        <div class="achievement-name">${achievement.name}</div>
+                    </div>
+                `;
+            });
+
+            html += `
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">🔗 Social Connections</div>
+                    <div class="social-connections">
+                        <div class="social-card">
+                            <div class="social-info">
+                                <div class="social-icon">𝕏</div>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--color-primary);">Twitter / X</div>
+                                    <div class="${walletData.socialConnections >= 1 ? 'connected' : 'disconnected'}">
+                                        ${walletData.socialConnections >= 1 ? '✓ Connected' : '✗ Not Connected'}
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn" onclick="alert('Connect via IOPN Dashboard')">Connect</button>
+                        </div>
+                        <div class="social-card">
+                            <div class="social-info">
+                                <div class="social-icon">💬</div>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--color-primary);">Discord</div>
+                                    <div class="${walletData.socialConnections >= 2 ? 'connected' : 'disconnected'}">
+                                        ${walletData.socialConnections >= 2 ? '✓ Connected' : '✗ Not Connected'}
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn" onclick="alert('Connect via IOPN Dashboard')">Connect</button>
+                        </div>
+                        <div class="social-card">
+                            <div class="social-info">
+                                <div class="social-icon">📱</div>
+                                <div>
+                                    <div style="font-weight: 600; color: var(--color-primary);">Telegram</div>
+                                    <div class="${walletData.socialConnections >= 3 ? 'connected' : 'disconnected'}">
+                                        ${walletData.socialConnections >= 3 ? '✓ Connected' : '✗ Not Connected'}
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn" onclick="alert('Connect via IOPN Dashboard')">Connect</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">📚 Learn.iopn.tech Progress</div>
+                    <div class="stat-card" style="max-width: 400px;">
+                        <div class="stat-value">${walletData.learnScore}%</div>
+                        <div class="stat-label">Test Score Average</div>
+                        <div style="margin-top: 15px; color: var(--color-primary);">
+                            <a href="https://learn.iopn.tech" target="_blank" style="color: var(--color-secondary);">View Full Progress →</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">💎 RWA Portfolio (rwa.iopn.tech)</div>
+                    <div class="stat-card" style="max-width: 400px;">
+                        <div class="stat-value">${walletData.rwaPortfolio}</div>
+                        <div class="stat-label">Tokenized Assets Owned</div>
+                        <div style="margin-top: 15px; color: var(--color-primary);">
+                            <a href="https://rwa.iopn.tech/portfolio" target="_blank" style="color: var(--color-secondary);">View Portfolio →</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">📅 Activity Heatmap (Last 90 Days)</div>
+                    <div class="heatmap" id="heatmap"></div>
+                </div>
+            `;
+
+            document.getElementById('results').innerHTML = html;
+            generateHeatmap();
+        }
+
+        function generateHeatmap() {
+            const heatmap = document.getElementById('heatmap');
+            if (!heatmap) return;
+
+            heatmap.innerHTML = '';
+            
+            for (let i = 89; i >= 0; i--) {
+                const day = document.createElement('div');
+                day.className = 'heatmap-day';
+                
+                const activity = Math.floor(Math.random() * 5);
+                if (activity > 0) {
+                    day.classList.add(`active-${activity}`);
+                    day.title = `${activity} transaction(s)`;
+                }
+                
+                heatmap.appendChild(day);
+            }
+        }
+
+        async function exportStats() {
+            const resultsDiv = document.getElementById('results');
+            if (!resultsDiv.innerHTML) {
+                alert('Please check a wallet first!');
+                return;
+            }
+
+            try {
+                const canvas = await html2canvas(document.body);
+                const link = document.createElement('a');
+                link.download = `iopn-stats-${walletData.address.substring(0, 8)}.png`;
+                link.href = canvas.toDataURL();
+                link.click();
+            } catch (error) {
+                alert('Screenshot feature requires wallet check first');
+            }
+        }
+
+        function shareToTwitter() {
+            if (!walletData.address) {
+                alert('Please check a wallet first!');
+                return;
+            }
+
+            const text = `🌐 My IOPN Stats:\n` +
+                `💎 ${walletData.balance.toFixed(2)} OPN\n` +
+                `⭐ ${walletData.totalPoints} Points\n` +
+                `🎓 ${walletData.learnScore}% Learn Score\n` +
+                `\nCheck yours at IOPN Hub! #IOPN #InternetOfPeople`;
+            
+            const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
+            window.open(url, '_blank');
+        }
+
+        function showLeaderboard() {
+            const leaderboardData = [
+                { address: '0x1234...5678', points: 1250, rank: 1 },
+                { address: '0xabcd...efgh', points: 1100, rank: 2 },
+                { address: '0x9876...4321', points: 980, rank: 3 },
+                { address: walletData.address ? `${walletData.address.substring(0, 6)}...${walletData.address.substring(38)}` : '0x0000...0000', points: walletData.totalPoints, rank: 15 },
+                { address: '0xdef0...1234', points: 850, rank: 4 },
+            ].sort((a, b) => b.points - a.points);
+
+            let html = '';
+            leaderboardData.forEach((user, index) => {
+                const rankClass = index < 3 ? `rank-${index + 1}` : '';
+                const isCurrentUser = user.address.includes(walletData.address?.substring(2, 8));
+                
+                html += `
+                    <tr style="${isCurrentUser ? 'background: rgba(0,255,136,0.1);' : ''}">
+                        <td><span class="rank-badge ${rankClass}">#${index + 1}</span></td>
+                        <td>${user.address}</td>
+                        <td><strong>${user.points}</strong></td>
+                    </tr>
+                `;
+            });
+
+            document.getElementById('leaderboardBody').innerHTML = html;
+            document.getElementById('leaderboardModal').classList.add('active');
+        }
+
+        function closeLeaderboard() {
+            document.getElementById('leaderboardModal').classList.remove('active');
+        }
+    </script>
+</body>
+</html>
